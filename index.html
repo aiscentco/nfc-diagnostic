@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AIscent Co. — Brief to Shelf Diagnostic</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--wow:#FF2D7B;--wow-deep:#C4165B;--bloom:#FF85B3;--petal:#FFE8F2;--ink:#1A1A1A;--white:#FFFFFF;--off:#F7F4F2;--muted:rgba(26,26,26,.52)}
+html,body{height:100%;background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.screen{display:none;min-height:100dvh;flex-direction:column;position:relative}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.anim-up{animation:fadeUp .6s cubic-bezier(.22,.68,0,1.15) both}
+
+/* ══ SPLASH ══ */
+#screen-splash{background:var(--ink);overflow:hidden;justify-content:space-between}
+.sp-glow-a{position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(255,45,123,.18) 0%,transparent 68%);bottom:-100px;right:-90px;pointer-events:none;z-index:0}
+.sp-glow-b{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,133,179,.09) 0%,transparent 70%);top:40px;left:-60px;pointer-events:none;z-index:0}
+.sp-contact-btn{position:absolute;top:24px;right:24px;z-index:10;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.18);padding:8px 0;transition:color .2s}
+.sp-contact-btn:hover{color:rgba(255,255,255,.42)}
+.sp-top{position:relative;z-index:1;padding:72px 36px 0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.sp-eyebrow{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:36px}
+.sp-eyebrow span{color:var(--wow)}
+.sp-diag-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(54px,14vw,72px);line-height:.92;letter-spacing:-3px;color:var(--white);margin-bottom:10px}
+.sp-diag-title em{color:var(--wow);font-style:italic}
+.sp-diag-sub{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:300;font-style:italic;color:rgba(255,255,255,.3);margin-bottom:44px;letter-spacing:.3px}
+.sp-rule{width:1px;height:48px;background:linear-gradient(to bottom,var(--wow),transparent);margin:0 auto 36px}
+.sp-miss-strong{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:var(--white);line-height:1.38;margin-bottom:10px}
+.sp-miss-body{font-size:13px;font-weight:300;color:rgba(255,255,255,.35);line-height:1.72}
+.sp-bottom{position:relative;z-index:1;padding:0 28px 52px;width:100%}
+.btn-main{display:block;width:100%;padding:20px 24px;background:var(--wow);color:var(--white);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:3.5px;text-transform:uppercase;border:none;cursor:pointer;text-align:center;transition:background .2s;text-decoration:none;margin-top:32px}
+.btn-main:active{background:var(--wow-deep)}
+.btn-ghost-w{display:block;width:100%;padding:17px 24px;margin-top:10px;background:transparent;color:rgba(255,255,255,.25);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:300;letter-spacing:3px;text-transform:uppercase;border:1px solid rgba(255,255,255,.07);cursor:pointer;text-align:center;transition:all .2s}
+.btn-ghost-w:hover{border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.5)}
+
+/* ══ DIAGNOSTIC ══ */
+#screen-diag{background:var(--white);color:var(--ink);padding-bottom:80px}
+.diag-hdr{background:var(--ink);padding:28px 28px 24px;position:relative}
+.diag-hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(to right,var(--wow) 0%,transparent 100%)}
+.diag-back{background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:0;margin-bottom:18px;display:block;transition:color .2s}
+.diag-back:hover{color:rgba(255,255,255,.48)}
+.diag-hdr-title{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--wow);margin-bottom:18px}
+.prog-track{height:1px;background:rgba(255,255,255,.1);position:relative}
+.prog-fill{position:absolute;top:0;left:0;height:1px;background:var(--wow);transition:width .6s cubic-bezier(.22,.68,0,1.2)}
+.prog-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.18);margin-top:8px}
+.q-body{padding:36px 28px 24px;flex:1;display:flex;flex-direction:column}
+.q-num{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--bloom);margin-bottom:16px}
+.q-text{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;line-height:1.3;color:var(--ink);margin-bottom:32px}
+.q-options{display:flex;flex-direction:column;gap:10px}
+.q-card{position:relative;overflow:hidden;padding:18px 20px 18px 52px;border:1px solid rgba(26,26,26,.1);background:var(--white);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;transition:border-color .2s,background .2s,transform .12s;-webkit-tap-highlight-color:transparent}
+.q-card:active{transform:scale(.98)}
+.q-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:var(--wow);transition:width .25s cubic-bezier(.22,.68,0,1.2)}
+.q-card.selected::before{width:4px}
+.q-card.selected{border-color:var(--wow);background:var(--petal)}
+.q-card:hover:not(.selected){border-color:var(--bloom);background:#fff7fb}
+.q-badge{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:rgba(26,26,26,.06);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:rgba(26,26,26,.28);transition:background .2s,color .2s;flex-shrink:0}
+.q-card.selected .q-badge{background:var(--wow);color:var(--white)}
+.q-card-label{font-size:13px;font-weight:300;color:rgba(26,26,26,.58);line-height:1.55;transition:color .2s}
+.q-card.selected .q-card-label{color:var(--ink);font-weight:400}
+@keyframes ripple{from{transform:scale(0);opacity:.2}to{transform:scale(3.5);opacity:0}}
+.ripple-el{position:absolute;border-radius:50%;width:80px;height:80px;background:var(--wow);pointer-events:none;transform:scale(0);animation:ripple .5s ease forwards}
+
+/* ══ LOADER ══ */
+.loader{display:none;position:fixed;inset:0;background:var(--ink);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:40px}
+.loader.on{display:flex}
+.load-ring{width:52px;height:52px;border:1px solid rgba(255,255,255,.08);border-top-color:var(--wow);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:28px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:12px}
+.load-head{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--white);text-align:center;line-height:1.45}
+
+/* ══ RESULT ══ */
+#screen-result{background:var(--white);color:var(--ink);overflow-y:auto;padding-bottom:80px}
+
+/* Dark hero with gauge */
+.res-hero{background:var(--ink);padding:36px 28px 40px;position:relative;overflow:hidden}
+.res-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(255,45,123,.18) 0%,transparent 70%);top:-80px;right:-80px;pointer-events:none}
+.res-eye{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:28px;position:relative;z-index:1}
+
+/* SPEEDOMETER */
+.gauge-wrap{position:relative;z-index:1;margin:0 auto 20px;width:240px;height:140px}
+.gauge-wrap svg{width:100%;height:100%}
+
+.gauge-score-label{position:relative;z-index:1;text-align:center;margin-bottom:6px}
+.gauge-score-num{font-family:'Cormorant Garamond',serif;font-size:72px;font-weight:300;color:var(--white);line-height:1;letter-spacing:-3px}
+.gauge-score-num .pink{color:var(--wow)}
+.gauge-score-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:4px}
+
+/* velocity translation line */
+.velocity-line{position:relative;z-index:1;text-align:center;margin-top:10px}
+.vel-badge{display:inline-block;padding:9px 16px;border:1px solid rgba(255,45,123,.3);background:rgba(255,45,123,.07)}
+.vel-txt{font-size:12px;font-weight:300;color:rgba(255,255,255,.62);line-height:1.5;letter-spacing:.3px}
+.vel-txt strong{color:var(--bloom);font-weight:500}
+
+/* countdown */
+.res-cd{position:relative;z-index:1;margin-top:24px;border:1px solid rgba(255,255,255,.07);padding:20px;background:rgba(255,255,255,.02)}
+.res-cd::before{content:'';position:absolute;top:0;left:0;width:24px;height:1px;background:var(--wow)}
+.cd-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.18);margin-bottom:6px}
+.cd-row{display:flex;align-items:baseline;gap:10px}
+.cd-num{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;color:var(--wow);line-height:1;letter-spacing:-1px}
+.cd-unit{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25)}
+.cd-sub{font-size:12px;font-weight:300;color:rgba(255,255,255,.28);margin-top:6px;line-height:1.6}
+
+/* result body — clean flow */
+.res-flow{padding:0}
+
+.res-block{padding:28px 28px;border-bottom:1px solid rgba(26,26,26,.07)}
+.res-block:last-of-type{border-bottom:none}
+.rb-eye{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--wow);margin-bottom:12px}
+.rb-body{font-size:14px;font-weight:300;color:var(--muted);line-height:1.8}
+.rb-body strong{font-weight:500;color:var(--ink)}
+
+/* Dark pivot block */
+.pivot-blk{background:var(--ink);padding:32px 28px}
+.pivot-blk .rb-eye{color:var(--wow)}
+.pivot-blk .rb-body{color:rgba(255,255,255,.5)}
+.pivot-blk .rb-body strong{color:var(--white)}
+
+/* Weeks recovered — the closer */
+.weeks-blk{background:var(--wow);padding:32px 28px;position:relative;overflow:hidden}
+.weeks-blk::after{content:'';position:absolute;top:-50px;right:-50px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
+.weeks-eye{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px}
+.weeks-combo{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+.weeks-num{font-family:'Cormorant Garamond',serif;font-size:80px;font-weight:300;color:var(--white);line-height:.9;letter-spacing:-3px}
+.weeks-unit{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.weeks-why{font-size:14px;font-weight:300;color:rgba(255,255,255,.75);line-height:1.68}
+
+/* CTA zone */
+.cta-zone{padding:24px 28px 8px}
+.btn-dark{display:block;width:100%;padding:20px 24px;background:var(--ink);color:var(--white);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:3.5px;text-transform:uppercase;border:none;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s}
+.btn-dark:active{background:#333}
+.btn-outline-ink{display:block;width:100%;padding:18px 24px;margin-top:10px;background:transparent;color:rgba(26,26,26,.32);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:300;letter-spacing:3px;text-transform:uppercase;border:1px solid rgba(26,26,26,.1);cursor:pointer;text-align:center;transition:all .2s}
+.btn-outline-ink:hover{border-color:var(--ink);color:var(--ink)}
+
+/* ══ CONTACT ══ */
+#screen-contact{background:var(--ink);overflow-y:auto;padding-bottom:80px}
+.ct-top{padding:52px 28px 36px;border-bottom:1px solid rgba(255,255,255,.06)}
+.ct-mark{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;letter-spacing:-1px;color:var(--white);line-height:1}
+.ct-mark span{color:var(--wow)}
+.ct-role{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.18);margin-top:12px}
+.ct-row{display:flex;align-items:center;gap:18px;padding:20px 28px;border-bottom:1px solid rgba(255,255,255,.05);text-decoration:none;color:var(--white);transition:background .15s}
+.ct-row:hover{background:rgba(255,255,255,.02)}
+.ct-type{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.15);width:64px;flex-shrink:0}
+.ct-val{font-size:14px;font-weight:300;color:rgba(255,255,255,.7);flex:1;line-height:1.4}
+.ct-arr{font-size:16px;color:rgba(255,255,255,.1)}
+.ct-book{display:block;margin:24px 28px 0;width:calc(100% - 56px);padding:20px 24px;background:var(--wow);color:var(--white);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:3.5px;text-transform:uppercase;border:none;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s}
+.ct-book:active{background:var(--wow-deep)}
+.ct-foot{padding:32px 28px 16px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.08);text-align:center}
+
+/* ══ NAV ══ */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--ink);border-top:1px solid rgba(255,255,255,.06);display:none;z-index:200;padding-bottom:env(safe-area-inset-bottom,8px)}
+.bnav.on{display:flex}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:11px 8px 9px;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.16);transition:color .15s}
+.nb.active{color:var(--wow)}
+.nb-icon{width:18px;height:18px;margin-bottom:5px;display:flex;align-items:center;justify-content:center}
+.nb-label{font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.nbsvg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.2}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="load-ring"></div>
+  <div class="load-label">Brief to Shelf Diagnostic</div>
+  <div class="load-head">Calculating your<br>pipeline velocity score…</div>
+</div>
+
+<!-- ══ SPLASH ══ -->
+<div id="screen-splash" class="screen active">
+  <div class="sp-glow-a"></div><div class="sp-glow-b"></div>
+  <button class="sp-contact-btn" onclick="goTo('contact')">Contact ↗</button>
+  <div class="sp-top anim-up">
+    <div class="sp-eyebrow">AIscent <span>·</span> Co &nbsp;·&nbsp; Beauty NPD Acceleration</div>
+    <div class="sp-diag-title">Brief<br>to <em>Shelf</em><br>Diagnostic</div>
+    <div class="sp-diag-sub">Are you launching at full speed? Or leaving weeks on the table?</div>
+    <div class="sp-rule"></div>
+    <div class="sp-miss-strong">Beauty brands that miss their launch window<br>don't get a second chance.</div>
+    <div class="sp-miss-body" style="margin-top:10px">Three questions. 60 seconds.<br>A score backed by real industry data.</div>
+  </div>
+  <div class="sp-bottom anim-up" style="animation-delay:.15s">
+    <button class="btn-main" onclick="goTo('diag')">Begin Diagnostic →</button>
+    <button class="btn-ghost-w" onclick="goTo('contact')">View Contact Details</button>
+  </div>
+</div>
+
+<!-- ══ DIAGNOSTIC ══ -->
+<div id="screen-diag" class="screen">
+  <div class="diag-hdr">
+    <button class="diag-back" onclick="goTo('splash')">← Back</button>
+    <div class="diag-hdr-title">Brief to Shelf Diagnostic</div>
+    <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    <div class="prog-label" id="prog-lbl">Question 1 of 3</div>
+  </div>
+  <div id="q-body" class="q-body anim-up"></div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div id="screen-result" class="screen">
+  <div class="res-hero">
+    <div class="res-glow"></div>
+    <div class="res-eye">Brief to Shelf Diagnostic · Your Result</div>
+
+    <!-- SPEEDOMETER SVG -->
+    <div class="gauge-wrap">
+      <svg viewBox="0 0 240 140" xmlns="http://www.w3.org/2000/svg" id="gauge-svg">
+        <defs>
+          <linearGradient id="arc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#FF2D7B" stop-opacity=".15"/>
+            <stop offset="100%" stop-color="#FF2D7B" stop-opacity=".15"/>
+          </linearGradient>
+        </defs>
+        <!-- track arc -->
+        <path id="gauge-track" d="" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8" stroke-linecap="round"/>
+        <!-- filled arc -->
+        <path id="gauge-fill" d="" fill="none" stroke="#FF2D7B" stroke-width="8" stroke-linecap="round"/>
+        <!-- tick marks -->
+        <g id="gauge-ticks"></g>
+        <!-- speed labels -->
+        <text x="20" y="132" font-family="DM Sans,sans-serif" font-size="9" fill="rgba(255,255,255,.25)" letter-spacing="1">0</text>
+        <text x="108" y="58" font-family="DM Sans,sans-serif" font-size="9" fill="rgba(255,255,255,.25)" letter-spacing="1" text-anchor="middle">50</text>
+        <text x="212" y="132" font-family="DM Sans,sans-serif" font-size="9" fill="rgba(255,255,255,.25)" letter-spacing="1" text-anchor="end">100</text>
+        <!-- needle -->
+        <line id="gauge-needle" x1="120" y1="120" x2="120" y2="52" stroke="#FF2D7B" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="120" cy="120" r="5" fill="#FF2D7B"/>
+        <circle cx="120" cy="120" r="2.5" fill="#1A1A1A"/>
+      </svg>
+    </div>
+
+    <div class="gauge-score-label">
+      <div class="gauge-score-num"><span class="pink" id="r-score">—</span></div>
+      <div class="gauge-score-sub">Pipeline Velocity Score</div>
+    </div>
+
+    <div class="velocity-line">
+      <div class="vel-badge">
+        <div class="vel-txt" id="r-vel-txt">Analysing your pipeline…</div>
+      </div>
+    </div>
+
+    <div class="res-cd">
+      <div class="cd-label">Days to act</div>
+      <div class="cd-row">
+        <div class="cd-num" id="r-days">—</div>
+        <div class="cd-unit">days</div>
+      </div>
+      <div class="cd-sub" id="r-days-sub">Calculating your window…</div>
+    </div>
+  </div>
+
+  <!-- clean result flow — injected -->
+  <div class="res-flow" id="res-flow"></div>
+  <div class="cta-zone" id="res-cta"></div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div id="screen-contact" class="screen">
+  <div class="ct-top anim-up">
+    <div class="ct-mark">AIscent<span>·</span>Co</div>
+    <div class="ct-role">Beauty NPD Acceleration · Stockholm</div>
+  </div>
+  <a class="ct-row" href="tel:+46735997599"><div class="ct-type">Phone</div><div class="ct-val">+46 73 599 75 99</div><div class="ct-arr">›</div></a>
+  <a class="ct-row" href="mailto:xo@aiscent.co"><div class="ct-type">Email</div><div class="ct-val">xo@aiscent.co</div><div class="ct-arr">›</div></a>
+  <a class="ct-row" href="https://www.aiscent.co" target="_blank"><div class="ct-type">Web</div><div class="ct-val">www.aiscent.co</div><div class="ct-arr">›</div></a>
+  <a class="ct-row" href="https://instagram.com/aiscentco" target="_blank"><div class="ct-type">Instagram</div><div class="ct-val">@aiscentco</div><div class="ct-arr">›</div></a>
+  <!-- LinkedIn: add your URL when ready -->
+  <a class="ct-book" href="https://calendar.app.google/HJds3uoaBK4QQ4CN8" target="_blank">Book 30 min. Recover weeks.</a>
+  <div class="ct-foot">AIscent Co. · Stockholm · 2026</div>
+</div>
+
+<!-- NAV -->
+<nav class="bnav" id="bnav">
+  <button class="nb" id="nb-splash" onclick="goTo('splash')">
+    <div class="nb-icon"><svg class="nbsvg" viewBox="0 0 18 18"><path d="M2 9L9 2l7 7"/><path d="M4 7v8h10V7"/></svg></div>
+    <div class="nb-label">Home</div>
+  </button>
+  <button class="nb" id="nb-diag" onclick="goTo('diag')">
+    <div class="nb-icon"><svg class="nbsvg" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 2"/></svg></div>
+    <div class="nb-label">Diagnostic</div>
+  </button>
+  <button class="nb" id="nb-result" onclick="goTo('result')">
+    <div class="nb-icon"><svg class="nbsvg" viewBox="0 0 18 18"><path d="M3 14l4-5 3 3 3-4 4 6"/></svg></div>
+    <div class="nb-label">My Score</div>
+  </button>
+  <button class="nb" id="nb-contact" onclick="goTo('contact')">
+    <div class="nb-icon"><svg class="nbsvg" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div>
+    <div class="nb-label">Contact</div>
+  </button>
+</nav>
+
+<script>
+/* ── GAUGE drawing ── */
+const CX=120,CY=120,R=88;
+const START_ANG=Math.PI,END_ANG=2*Math.PI; // left to right semicircle
+
+function polarToXY(angle,r){
+  return{x:CX+r*Math.cos(angle),y:CY+r*Math.sin(angle)};
+}
+
+function describeArc(startAng,endAng){
+  const s=polarToXY(startAng,R);
+  const e=polarToXY(endAng,R);
+  const large=endAng-startAng>Math.PI?1:0;
+  return`M${s.x.toFixed(2)} ${s.y.toFixed(2)} A${R} ${R} 0 ${large} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+}
+
+function initGauge(){
+  document.getElementById('gauge-track').setAttribute('d',describeArc(START_ANG,END_ANG));
+  // tick marks
+  const g=document.getElementById('gauge-ticks');
+  for(let i=0;i<=10;i++){
+    const ang=START_ANG+(END_ANG-START_ANG)*(i/10);
+    const inner=polarToXY(ang,R-6);
+    const outer=polarToXY(ang,R+6);
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',inner.x.toFixed(2));line.setAttribute('y1',inner.y.toFixed(2));
+    line.setAttribute('x2',outer.x.toFixed(2));line.setAttribute('y2',outer.y.toFixed(2));
+    line.setAttribute('stroke','rgba(255,255,255,0.1)');line.setAttribute('stroke-width','1');
+    g.appendChild(line);
+  }
+}
+
+function animateGauge(score){
+  const targetAng=START_ANG+(END_ANG-START_ANG)*(score/100);
+  let current=0;
+  const needle=document.getElementById('gauge-needle');
+  const fill=document.getElementById('gauge-fill');
+
+  function step(){
+    current=Math.min(current+1,score);
+    const ang=START_ANG+(END_ANG-START_ANG)*(current/100);
+    fill.setAttribute('d',describeArc(START_ANG,ang));
+    const tip=polarToXY(ang,R-16);
+    needle.setAttribute('x2',tip.x.toFixed(2));
+    needle.setAttribute('y2',tip.y.toFixed(2));
+    if(current<score)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── APP STATE ── */
+let answers={},currentQ=0,resultReady=false;
+
+const QS=[
+  {id:'bottleneck',text:'Where does your NPD timeline most consistently stall?',opts:[
+    {v:'mkt',l:'Marketing brief gaps — concept not detailed enough to run R&D and Packaging in parallel'},
+    {v:'artwork',l:'Artwork loops between Brand, Packaging and Legal — each revision cycle adding 10–14 days'},
+    {v:'sourcing',l:'Supplier sourcing and MOQ negotiations running after sampling has already started'},
+    {v:'reg',l:'Regulatory and stability testing only initiated after final formula is locked'}
+  ]},
+  {id:'ttm',text:'What is your target time-to-market for a new launch?',opts:[
+    {v:'slow',l:'12–18 months — full sequential pipeline with traditional sign-offs'},
+    {v:'mid',l:'6–9 months — agile, some parallel-path working already in place'},
+    {v:'fast',l:'Under 6 months — ultra-speed, fast-beauty model'}
+  ]},
+  {id:'miss',text:'How often do your new products miss their intended seasonal launch window?',opts:[
+    {v:'rarely',l:'Rarely — we land on shelf when planned'},
+    {v:'sometimes',l:'1–2 times a year — painful and commercially costly'},
+    {v:'often',l:'Almost every cycle — we are permanently playing catch-up'}
+  ]}
+];
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('screen-'+id);
+  el.classList.add('active');
+  document.getElementById('bnav').classList.toggle('on',id!=='splash');
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nb-'+id);
+  if(nb)nb.classList.add('active');
+  if(id==='diag'){answers={};currentQ=0;resultReady=false;renderQ(0);}
+  if(id==='result'&&!resultReady){goTo('diag');return;}
+  el.scrollTop=0;window.scrollTo(0,0);
+}
+
+function renderQ(idx){
+  const q=QS[idx];
+  document.getElementById('prog').style.width=Math.round(idx/3*100)+'%';
+  document.getElementById('prog-lbl').textContent='Question '+(idx+1)+' of 3';
+  const body=document.getElementById('q-body');
+  body.classList.remove('anim-up');void body.offsetWidth;body.classList.add('anim-up');
+  body.innerHTML=`
+    <div class="q-num">Question ${idx+1} / 3</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-options">
+      ${q.opts.map((o,i)=>`
+        <button class="q-card" onclick="pick('${q.id}','${o.v}',${i},event)">
+          <div class="q-badge">${String.fromCharCode(65+i)}</div>
+          <div class="q-card-label">${o.l}</div>
+        </button>`).join('')}
+    </div>`;
+}
+
+function pick(qid,val,idx,e){
+  const btn=e.currentTarget;
+  const r=document.createElement('div');r.className='ripple-el';
+  const rect=btn.getBoundingClientRect();
+  r.style.cssText=`left:${e.clientX-rect.left-40}px;top:${e.clientY-rect.top-40}px;`;
+  btn.appendChild(r);setTimeout(()=>r.remove(),550);
+  answers[qid]=val;
+  document.querySelectorAll('.q-card').forEach((b,i)=>b.classList.toggle('selected',i===idx));
+  setTimeout(()=>{
+    currentQ++;
+    if(currentQ<QS.length)renderQ(currentQ);
+    else{
+      document.getElementById('prog').style.width='100%';
+      document.getElementById('prog-lbl').textContent='Complete — analysing…';
+      document.getElementById('loader').classList.add('on');
+      runAI();
+    }
+  },420);
+}
+
+function daysToAct(ttm){
+  const now=new Date();
+  const months={slow:15,mid:7.5,fast:5}[ttm]||9;
+  const leadMs=months*30.44*864e5;
+  const resets=[[now.getFullYear(),1,1,'Spring'],[now.getFullYear(),4,1,'Summer'],[now.getFullYear(),7,1,'Autumn'],[now.getFullYear(),9,15,'Holiday'],[now.getFullYear()+1,1,1,'Spring'],[now.getFullYear()+1,4,1,'Summer'],[now.getFullYear()+1,7,1,'Autumn']];
+  for(const[y,m,d,name]of resets){
+    const reset=new Date(y,m,d);const deadline=new Date(reset.getTime()-leadMs);
+    if(deadline>now){
+      return{days:Math.ceil((deadline-now)/864e5),label:reset.toLocaleString('en-GB',{month:'long',year:'numeric'})};
+    }
+  }
+  return{days:45,label:'upcoming reset'};
+}
+
+function velocityLine(score,level){
+  if(score>=75)return`Your pipeline is running at <strong>${score}% velocity</strong>. Strong launch cadence with fine-tuning opportunities.`;
+  if(score>=50)return`Your pipeline is running at <strong>${score}% velocity</strong>. Moderate drag is costing you seasonal windows.`;
+  return`Your pipeline is running at <strong>${score}% velocity</strong>. Significant friction is blocking your path to shelf.`;
+}
+
+async function runAI(){
+  const bMap={mkt:'Marketing brief incompleteness — R&D and Packaging cannot run in parallel',artwork:'Artwork iteration loops between Brand, Packaging and Legal',sourcing:'Supplier sourcing and MOQ negotiations started too late in the process',reg:'Regulatory and stability testing initiated only after formula is finalised'};
+  const tMap={slow:'12–18 months',mid:'6–9 months',fast:'Under 6 months'};
+  const mMap={rarely:'rarely',sometimes:'1–2 times a year',often:'almost every cycle'};
+  const sys=`You are AIscent Co., a beauty NPD agility consultancy. Return ONLY valid compact JSON — no markdown, no backticks, no explanation.
+Real beauty NPD benchmarks: G2→G3 has only 19% on-time rate across 230 planned days. Marketing is the #1 delay function with 81% of G2 deadlines missed. Packaging structural investigations average 52 days late. Root cause of G2→G3 collapse is brief incompleteness. Missing a seasonal reset costs a brand a full cycle.`;
+  const usr=`Bottleneck: ${bMap[answers.bottleneck]}. TTM target: ${tMap[answers.ttm]}. Misses windows: ${mMap[answers.miss]}.
+Return JSON: {"score":<integer 0-100 reflecting pipeline velocity — higher is faster/better>,"level":"<High Velocity|Moderate Risk|Urgent Action Required>","analysis":"<2-3 sentences diagnosing this specific bottleneck using real benchmark context — no generic advice>","pivot":"<2 sentences: one concrete parallel-path or structural fix specific to this bottleneck and beauty NPD>","weeks_saved":<integer 4-10>,"weeks_why":"<1 sentence on what recovering those weeks enables in terms of retail windows>","cta":"<12-16 words: a direct, confident invitation to look at their actual calendar together>"}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,temperature:1,system:sys,messages:[{role:'user',content:usr}]})});
+    const d=await res.json();
+    const txt=d.content?.find(b=>b.type==='text')?.text||'';
+    renderResult(JSON.parse(txt.replace(/```json|```/g,'').trim()));
+  }catch(e){renderResult(fallback());}
+}
+
+function retake(){
+  answers={};currentQ=0;resultReady=false;
+  document.getElementById('res-flow').innerHTML='';
+  document.getElementById('res-cta').innerHTML='';
+  document.getElementById('r-score').textContent='—';
+  document.getElementById('r-vel-txt').textContent='Analysing your pipeline…';
+  document.getElementById('r-days').textContent='—';
+  document.getElementById('r-days-sub').textContent='Calculating your window…';
+  document.getElementById('gauge-fill').setAttribute('d','');
+  const needle=document.getElementById('gauge-needle');
+  needle.setAttribute('x2','120');needle.setAttribute('y2','52');
+  goTo('diag');
+}
+
+function fallback(){
+  const base={mkt:48,artwork:60,sourcing:64,reg:55};
+  const ttmMod={slow:8,mid:0,fast:-12};
+  const missMod={rarely:10,sometimes:0,often:-18};
+  const score=Math.min(92,Math.max(18,
+    (base[answers.bottleneck]||48)+(ttmMod[answers.ttm]||0)+(missMod[answers.miss]||0)
+  ));
+  const level=score>=72?'High Velocity':score>=50?'Moderate Risk':'Urgent Action Required';
+  const analysis={
+    mkt:"Marketing tasks account for 81% of G2 deadline misses across the beauty industry. Your brief is reaching R&D and Packaging too late and too incomplete to action in parallel. This is the root cause behind the sector's 19% G2 to G3 on-time rate, and it collapses the critical path before formulation even begins.",
+    artwork:"Sequential artwork approval where Brand, Packaging and Legal each review in turn rather than simultaneously is the most underestimated drag in beauty NPD. Each disconnected round-trip adds 10 to 14 days of dead time. This is the pattern behind the industry's 52-day average packaging delay and a primary cause of missed planogram cutoffs.",
+    sourcing:'Running supplier RFQ after concept approval rather than alongside it is a structural delay confirmed consistently across beauty NPD data. Procurement is the last function initiated despite sitting on the critical path, a pattern that compounds into 6 to 8 week overruns at G2 to G3, already the most at-risk gate in the pipeline.',
+    reg:'Initiating regulatory and stability testing only after final formula lock creates a sequential queue that costs an average 6 to 8 weeks at G2 to G3, already the gate with only 19% on-time performance industry-wide. For CPSR and INCI-dependent markets, this end-stage bottleneck is the most frequently unrecoverable delay in the beauty pipeline.'
+  };
+  const pivot={
+    mkt:'A single-source-of-truth brief template with mandatory inputs from R&D, Packaging, Regulatory and Procurement locked before G1 closes this gap immediately. Treating brief completeness as a hard gate condition, not a courtesy, reduces G2 to G3 slippage by up to 60%.',
+    artwork:"A single artwork traffic controller with a live shared brief visible to all stakeholders simultaneously collapses the round-robin into one parallel review cycle. Locking substrate and format specs at concept stage removes 80% of late structural revision requests before they arise.",
+    sourcing:'Pre-qualifying a dual-supplier roster per raw material category before briefs are issued removes RFQ lead time from the critical path entirely. Initiating MOQ negotiations at G1 rather than G2 recovers 4 to 6 weeks on every single project.',
+    reg:'Running regulatory pre-screening in parallel with formulation development collapses the compliance queue into the existing timeline. A rolling dossier updated at each stage-gate removes the end-stage submission dependency entirely.'
+  };
+  const weeks={mkt:8,artwork:5,sourcing:6,reg:7};
+  const why={
+    mkt:"Enough to hit your next seasonal reset with a two-week buffer to spare.",
+    artwork:"Recovers the Spring planogram window that artwork delays most commonly cost.",
+    sourcing:"Moves your sampling timeline forward enough to protect the Autumn retail reset.",
+    reg:"Removes the bottleneck most frequently responsible for missing Holiday planogram cutoffs."
+  };
+  const cta={
+    mkt:"Let's redesign your brief architecture and recover your calendar.",
+    artwork:"Let's map your artwork approval flow and eliminate the dead time together.",
+    sourcing:"Let's restructure your sourcing timeline against your development calendar.",
+    reg:"Let's move your regulatory workstream to parallel-path and recover your calendar."
+  };
+  const b=answers.bottleneck||'mkt';
+  return{score,level,analysis:analysis[b],pivot:pivot[b],weeks_saved:weeks[b],weeks_why:why[b],cta:cta[b]};
+}
+
+function renderResult(r){
+  resultReady=true;
+  document.getElementById('loader').classList.remove('on');
+  notifyCompletion(r.score,answers.bottleneck,answers.ttm,answers.miss,r.weeks_saved);
+
+  // Score + gauge
+  document.getElementById('r-score').textContent=r.score;
+  document.getElementById('r-vel-txt').innerHTML=velocityLine(r.score,r.level);
+  animateGauge(r.score);
+
+  // Countdown
+  const{days,label}=daysToAct(answers.ttm);
+  document.getElementById('r-days').textContent=days;
+  document.getElementById('r-days-sub').innerHTML=`Days to start your AI-powered pipeline transformation. <strong>Brands that move now will own the next trend window.</strong> Brands that wait will be briefing it when it\'s already kicking off.`;
+
+  // Flow
+  document.getElementById('res-flow').innerHTML=`
+    <div class="res-block">
+      <div class="rb-eye">The Diagnosis</div>
+      <div class="rb-body">${r.analysis}</div>
+    </div>
+    <div class="pivot-blk">
+      <div class="rb-eye">The Agile Pivot</div>
+      <div class="rb-body">${r.pivot}</div>
+    </div>
+    <div class="weeks-blk">
+      <div class="weeks-eye">Weeks Recoverable</div>
+      <div class="weeks-combo">
+        <div class="weeks-num">${r.weeks_saved}</div>
+        <div class="weeks-unit">weeks</div>
+      </div>
+      <div class="weeks-why">${r.weeks_why}</div>
+    </div>
+    <div class="res-block">
+      <div class="rb-eye">How We Work</div>
+      <div class="rb-body">We diagnose, design and drive AI-powered NPD acceleration. Rebuilding brief systems, gate logic and approval workflows so your team catches trend windows your competitors are still briefing. <strong>${r.cta}</strong></div>
+    </div>`;
+
+  document.getElementById('res-cta').innerHTML=`
+    <a href="https://calendar.app.google/HJds3uoaBK4QQ4CN8" target="_blank" class="btn-dark">Book 30 min. Recover weeks.</a>
+    <button class="btn-outline-ink" onclick="goTo('contact')">View All Contact Details</button>
+    <div style="text-align:center;padding:16px 0 4px"><button onclick="retake()" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(26,26,26,.3);cursor:pointer;padding:8px 0;transition:color .2s" onmouseover="this.style.color='rgba(26,26,26,.6)'" onmouseout="this.style.color='rgba(26,26,26,.3)'">Retake Diagnostic ↺</button></div>
+    <div style="height:16px"></div>`;
+
+  goTo('result');
+}
+
+function retake(){
+  answers={};currentQ=0;resultReady=false;
+  document.getElementById('res-flow').innerHTML='';
+  document.getElementById('res-cta').innerHTML='';
+  document.getElementById('r-score').textContent='—';
+  document.getElementById('r-vel-txt').textContent='Analysing your pipeline…';
+  document.getElementById('r-days').textContent='—';
+  document.getElementById('r-days-sub').textContent='Calculating your window…';
+  document.getElementById('gauge-fill').setAttribute('d','');
+  const needle=document.getElementById('gauge-needle');
+  needle.setAttribute('x2','120');needle.setAttribute('y2','52');
+  goTo('diag');
+}
+
+async function notifyCompletion(score,bottleneck,ttm,miss,weeks){
+  // Level 1 email notification via EmailJS
+  // Setup: create free account at emailjs.com, add your service + template IDs below
+  // Template variables: {{score}} {{bottleneck}} {{ttm}} {{miss}} {{weeks_saved}} {{timestamp}}
+  const EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
+  const EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
+  const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
+  if(EMAILJS_SERVICE_ID==='YOUR_EMAILJS_SERVICE_ID')return; // not configured yet
+  try{
+    await fetch('https://api.emailjs.com/api/v1.0/email/send',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        service_id:EMAILJS_SERVICE_ID,
+        template_id:EMAILJS_TEMPLATE_ID,
+        user_id:EMAILJS_PUBLIC_KEY,
+        template_params:{
+          score,bottleneck,ttm,miss,
+          weeks_saved:weeks,
+          timestamp:new Date().toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'})
+        }
+      })
+    });
+  }catch(e){/* silent — never interrupt the user experience */}
+}
+
+initGauge();
+renderQ(0);
+</script>
+</body>
+</html>
